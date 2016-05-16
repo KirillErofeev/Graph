@@ -1,8 +1,10 @@
 #include <vector>
 #include <iostream>
+#include <algorithm>
+#include <CL/cl.h>
+#include "ClInit.hpp"
 #include "graph.hpp"
 #include "tools.hpp"
-#include <algorithm>
 
 
 adjacencyMatrix::adjacencyMatrix(size_t size) : size(size){
@@ -17,8 +19,9 @@ adjacencyMatrix::adjacencyMatrix(size_t size) : size(size){
         }
         for (int j = 0; j < size-1; ++j) {
             m[j][j+1] = fastRand(RANGE);
+            m[j+1][j] = fastRand(RANGE);
         }
-    numberOfEdges = size-1;
+    numberOfEdges = 2*size-1;
 }
 
 adjacencyMatrix::adjacencyMatrix(size_t size, size_t dense) : adjacencyMatrix(size){
@@ -91,10 +94,7 @@ Graph::Graph(double **m, size_t size){
         }
 }
 
-Graph::Graph(adjacencyMatrix const& am) : Graph(am.m, am.size){
-
-}
-
+Graph::Graph(adjacencyMatrix const& am) : Graph(am.m, am.size){}
 Graph::Graph(){}
 
 std::vector<Edge> Graph::getVectorEdges(bool oriented = false) const{
@@ -234,10 +234,10 @@ void dijkstraHeap(Graph const& g, size_t from, double*& weights) {
     }
     weights[from] = 0;
     notes.insert({from,0});
+
     while (notes.size()){
         auto current = notes.begin();
         size_t curVertex = current->first;
-        double curWeight = current->second;
         notes.erase(notes.begin());
         auto edges = g.getEdges(curVertex);
         for(int i=0; i<edges.size(); ++i){
@@ -268,11 +268,13 @@ void fastDijkstraHeap(Graph const& g, size_t from, double*& weights) {
         }
     }
 }
-void floyd(Graph const& g, verFromVerToDistance& result){
+void floyd(Graph const& g, verFromVerToDistance& result, double** f){
     size_t numberOfVertex = g.numberOfVertex();
-    double **m = new double*[numberOfVertex];
-    for(size_t i=0; i<numberOfVertex; ++i)
-        m[i] = new double[numberOfVertex];
+
+    double **m = new double*[g.numberOfVertex()];
+    for (int i = 0; i < g.numberOfVertex(); ++i) {
+        m[i] = new double[g.numberOfVertex()];
+    }
     for (int i = 0; i < numberOfVertex; ++i) {
         for (int j = 0; j < numberOfVertex; ++j) {
             if(i==j)
@@ -369,4 +371,13 @@ void fastDijkstraForAll(Graph const& g, verFromVerToDistance& res){
             res.second = cur.second;
         }
     }
+}
+
+void fastesDijkstraForAll(Graph const& g, verFromVerToDistance& res){
+    cl_device_id device;
+    cl_context context;
+    ClInit::init(&device, &context);
+    cl_command_queue commandQueue =
+            clCreateCommandQueueWithProperties(
+                    context, device, NULL, NULL);
 }

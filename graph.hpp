@@ -58,14 +58,13 @@ private:
 void dijkstra(Graph const& g, size_t from, double*& weights);
 void bellman(Graph const& g, size_t from, double*& weights);
 void dijkstraHeap(Graph const& g, size_t from, double*& weights);
-void floyd(Graph const& g, verFromVerToDistance& res);
+void floyd(Graph const& g, verFromVerToDistance& res, double** m);
 void naiveDijkstraForAll(Graph const& g, verFromVerToDistance& res);
 void naiveDijkstraHeapForAll(Graph const& g, verFromVerToDistance& res);
 void bellmanForAll(Graph const& g, verFromVerToDistance& res);
 
 
 struct adjacencyMatrix{
-
     adjacencyMatrix(size_t size);
     adjacencyMatrix(size_t size, size_t dense);
     size_t getNumberOfEdges() const;
